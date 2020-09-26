@@ -103,7 +103,7 @@ class Devicestats:
                     print(f"Config Item: {item}")
 
         # Pull in the retry from config
-        self.retry = self.config["Admin"][0]["retry_interval"]
+        self.retry = self.config["Admin"]["retry_interval"]
         print(f"Retry Interval: {self.retry}")
 
     def data_runner(self):
