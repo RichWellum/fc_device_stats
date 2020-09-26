@@ -89,10 +89,9 @@ class Devicestats:
         self.total_fc_data_cycle_prev = pd.DataFrame()
         self.fc_datafile_path = "/lancope/var/sw/today/data/exporter_device_stats.txt"
         self.to_user_csv = "persistent_device_stats.csv"
-        self.config = args.config
 
         # Get the config
-        with open(self.config, "r") as stream:
+        with open(args.config, "r") as stream:
             try:
                 self.config = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
@@ -100,11 +99,11 @@ class Devicestats:
 
         if self.verbose:
             for _, obj in self.config.items():
-                for flow_collector in obj:
-                    print(flow_collector)
+                for item in obj:
+                    print(f"Config Item: {item}")
 
         # Pull in the retry from config
-        self.retry = self.config["Admin"]["retry_interval"]
+        self.retry = self.config["Admin"][0]["retry_interval"]
         print(f"Retry Interval: {self.retry}")
 
     def data_runner(self):
@@ -133,7 +132,7 @@ class Devicestats:
         '/lancope/var/sw/today/data/exporter_device_stats.txt' to /tmp.
         """
 
-        print(f"SSH connect to Flow Collector: {fc_ip}")
+        print(f"\nSSH connect to Flow Collector: {fc_ip}")
         ssh = SSHClient()
         ssh.load_system_host_keys()
         ssh.connect(
@@ -156,7 +155,7 @@ class Devicestats:
     def combine_fc_data(self, new_fc_data):
         """Combine Flow Collector data from one cycle into a pandas Series."""
 
-        print("Adding file to aggregate FC data...")
+        print("Adding file to aggregated FC data...")
 
         # Columns we are interested in
         fc_data = new_fc_data[["Exporter_Address", "Current_NetFlow_bps"]]
@@ -176,10 +175,10 @@ class Devicestats:
         At this point we have all the FC's data and this method should be
         called once per cycle.
         """
-        print("Gathered and cleaned all FCs data, lets process it...")
+        print("\nGathered and cleaned all FCs data, lets process it...")
 
         # Add new column with a status up or down based on the BPS on the FC
-        print("Adding Status based on Current Netflow BPS...")
+        print("Adding Status based on Current Netflow BPS...\n")
         self.total_fc_data_cycle_current["Status"] = (
             self.total_fc_data_cycle_current.Current_NetFlow_bps > 0
         ).map({True: "Up", False: "Down"})
@@ -205,7 +204,7 @@ class Devicestats:
                 comp_fc_data_1_cycle["Status_Change"] == "Changed"
             ).map({True: pd.to_datetime("today"), False: "N/A"})
 
-            print(f"\nComparison between current and previous data:\n{comp_fc_data_1_cycle}")
+            print(f"Comparison between current and previous data:\n{comp_fc_data_1_cycle}")
 
             # Where an interface status has changed, save to persistent file
             comp_fc_data_1_cycle.loc[
