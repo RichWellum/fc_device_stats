@@ -1,10 +1,10 @@
 #!/usr/local/bin/python3
 """
-fc_device_stats.py - Parse a Stealthwatch (SW) Flow Collector (FC) device stats.
+fc_device_stats.py - Parse Stealthwatch (SW) Flow Collector (FC) device stats.
 
 Make sure passwordless ssh works on the remote FC.
 
-This has been tested on python3.7.5, highly recomend running from a virtual
+This has been tested on python3.8.5, highly recommend running from a virtual
 environment.
 """
 
