@@ -108,6 +108,11 @@ container like:
     --volume `pwd`/config_working.yaml:/app/config.yaml \
     rwellum/fc_device_stats
 
+#### Docker save to file and load from fiel
+
+    docker save rwellum/fc_device_stats:latest | gzip > ~/Desktop/fc_device_stats.tar.gz
+    docker load -i ~/Desktop/fc_device_stats_latest.tar.gz
+
 ## Todo's
 
 Todo's from first customer demo:
