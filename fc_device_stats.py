@@ -31,7 +31,8 @@ def parse_args():
         epilog="E.g.: ./fc_device_stats.py config.yaml",
     )
     parser.add_argument(
-        "config", help="YAML Config file see config.yaml for example",
+        "config",
+        help="YAML Config file see config.yaml for example",
     )
     parser.add_argument(
         "-v",
@@ -150,6 +151,10 @@ class Devicestats:
         print("File successfully retrieved and read...")
         # Replace spaces with underscores in column names
         current_device.columns = current_device.columns.str.replace(" ", "_")
+
+        # Add in the FC IP, this is useful for debugging
+        current_device["FC_IP"] = fc_ip
+
         return current_device
 
     def combine_fc_data(self, new_fc_data):
@@ -158,7 +163,7 @@ class Devicestats:
         print("Adding file to aggregated FC data...")
 
         # Columns we are interested in
-        fc_data = new_fc_data[["Exporter_Address", "Current_NetFlow_bps"]]
+        fc_data = new_fc_data[["Exporter_Address", "Current_NetFlow_bps", "FC_IP"]]
 
         if self.verbose:
             print(f"New Flow Collector Data:\n{fc_data}")
@@ -207,11 +212,9 @@ class Devicestats:
             print(f"Comparison between current and previous data:\n{comp_fc_data_1_cycle}")
 
             # Where an interface status has changed, save to persistent file
-            comp_fc_data_1_cycle.loc[
-                comp_fc_data_1_cycle["Status_Change"] == "Changed"
-            ].set_index("Exporter_Address").to_csv(
-                self.to_user_csv, mode="a+", header=not os.path.isfile(self.to_user_csv)
-            )
+            comp_fc_data_1_cycle.loc[comp_fc_data_1_cycle["Status_Change"] == "Changed"].set_index(
+                "Exporter_Address"
+            ).to_csv(self.to_user_csv, mode="a+", header=not os.path.isfile(self.to_user_csv))
 
         else:
             print("Initial data:")
