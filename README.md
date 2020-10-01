@@ -106,12 +106,30 @@ container like:
     --volume ${SSH_AUTH_SOCK}:/ssh-agent --env SSH_AUTH_SOCK=/ssh-agent \
     --volume ${HOME}/.ssh/:/root/.ssh \
     --volume `pwd`/config_working.yaml:/app/config.yaml \
+    --volume `pwd`/persistent_device_stats.csv:/app/persistent_device_stats.csv \
+    --name fc_device_stats \
     rwellum/fc_device_stats
 
-#### Docker save to file and load from fiel
+**Note: to use the persistent volume command above, the file must exist. To mount the whole directory do:**
+
+    --volume `pwd`:/app
+
+#### Retrive the persistent log file from container to host
+
+    docker cp fc_device_stats:/app/persistent_device_stats.csv .
+
+#### Docker save to file and load from file instead of registry
 
     docker save rwellum/fc_device_stats:latest | gzip > ~/Desktop/fc_device_stats.tar.gz
     docker load -i ~/Desktop/fc_device_stats_latest.tar.gz
+
+### Attach to the docker if running
+
+    docker attach fc_device_stats
+
+### View volumes
+
+    docker inspect fc_device_stats
 
 ## Todo's
 
@@ -128,3 +146,26 @@ Todo's from first customer demo:
 
 - Send syslog - create alert method (log/email etc)
 - Add yaml syslog target receiver
+
+## Issues
+
+- Persistent csv file will not include a header if the tool doesn't create it
+- If an exporter is 'added' the code will abort:
+
+    (<class 'ValueError'>, ValueError('Can only compare identically-labeled Series objects'), <traceback object at 0x7f8c7c09c1c0>)
+    Traceback (most recent call last):
+    File "fc_device_stats.py", line 247, in <module>
+        main()
+    File "fc_device_stats.py", line 238, in main
+        parse.data_runner()
+    File "fc_device_stats.py", line 125, in data_runner
+        self.process_data()
+    File "fc_device_stats.py", line 204, in process_data
+        comp_fc_data_1_cycle["Status"] != self.total_fc_data_cycle_prev["Status"]
+    File "/usr/local/lib/python3.8/site-packages/pandas/core/ops/common.py", line 65, in new_method
+        return method(self, other)
+    File "/usr/local/lib/python3.8/site-packages/pandas/core/ops/__init__.py", line 365, in wrapper
+        raise ValueError("Can only compare identically-labeled Series objects")
+    ValueError: Can only compare identically-labeled Series objects
+
+    Consider restarting comparisons if a new exporter is found.
